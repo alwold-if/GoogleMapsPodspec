@@ -134,6 +134,11 @@ def main():
         shutil.move("{resources}/{file}".format(resources=resources, file=file), framework_version)
         os.symlink("Versions/Current/{file}".format(file=file), "{framework}/{file}".format(framework=framework, file=file))
 
+    print color(u"\u2600\ufe0f Signing bundle...")
+    bundle = "{framework_version}/GoogleMaps.bundle".format(framework_version=framework_version)
+    cmd = ["codesign", "-s", "-", bundle]
+    execute(cmd)
+
     print color(u"\U0001f680  Removing Resources directory and symlinks ...")
     os.rmdir(resources)
     os.remove("{framework}/Resources".format(framework=framework))
