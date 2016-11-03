@@ -47,6 +47,6 @@
     "z"
   ],
   "source": {
-    "http": "https://raw.githubusercontent.com/alwold-if/GoogleMapsPodspec/master/aa3052925ceeea2d-GoogleMaps-1.13.2.tar.gz"
+    "http": "https://raw.githubusercontent.com/alwold-if/GoogleMapsPodspec/xcode8/aa3052925ceeea2d-GoogleMaps-1.13.2.tar.gz"
   }
 }
