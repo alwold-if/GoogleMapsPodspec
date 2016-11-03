@@ -50,8 +50,9 @@ def parse_pod(name):
 
     - parameter name: The cocoapods name
     """
-    pods_json = subprocess.check_output(["pod", "spec", "cat", name])
-    pod = json.loads(pods_json)
+    #pods_json = subprocess.check_output(["pod", "spec", "cat", name])
+    #pod = json.loads(pods_json)
+    pod = json.load(open("GoogleMaps-1.13.2.podspec.json"))
 
     file_url = pod["source"]["http"]
     frameworks = set(pod["frameworks"])
@@ -107,6 +108,10 @@ def main():
 
     print color(u"\u2600\ufe0f Creating dynamic library ...")
     cmd = ["lipo", "-output", output, "-create"] + dylibs
+    execute(cmd)
+
+    print color(u"\u2600\ufe0f Signing...")
+    cmd = ["codesign", "-s", "-", output]
     execute(cmd)
 
     framework = "{build}/Frameworks/{name}.framework".format(name=POD_NAME,
