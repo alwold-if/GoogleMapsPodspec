@@ -111,7 +111,7 @@ def main():
     execute(cmd)
 
     print color(u"\u2600\ufe0f Signing...")
-    cmd = ["codesign", "-s", "-", output]
+    cmd = ["codesign", "-i", "com.google.GoogleMaps", "-s", "-", output]
     execute(cmd)
 
     framework = "{build}/Frameworks/{name}.framework".format(name=POD_NAME,
