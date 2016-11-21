@@ -119,6 +119,8 @@ def main():
     framework_version = "{framework}/Versions/A".format(framework=framework)
     info_plist_source = "Versions/Current/Info.plist".format(framework_version=framework_version)
     info_plist_target = "{framework}/Info.plist".format(framework=framework)
+    codesignature_source = "Versions/Current/_CodeSignature".format(framework_version=framework_version)
+    codesignature_target = "{framework}/_CodeSignature".format(framework=framework)
 
     print "build dir {build}".format(build=BUILD_DIR)
     print color(u"\U0001f680  Copying Info.plist ...")
@@ -127,6 +129,9 @@ def main():
     subprocess.call(["defaults", "write", "{framework_version}/Info.plist".format(framework_version=framework_version), "CFBundleExecutable", POD_NAME])
     print color(u"\U0001f680  Symlinking Info.plist ...")
     os.symlink(info_plist_source, info_plist_target)
+
+    print color(u"\U0001f680  Symlinking _CodeSignature ...")
+    os.symlink(codesignature_source, codesignature_target)
 
     resources = "{framework_version}/Resources".format(framework_version=framework_version)
     print color(u"\U0001f680  Moving bundles out of Resources ...")
