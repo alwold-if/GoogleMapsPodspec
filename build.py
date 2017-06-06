@@ -18,7 +18,7 @@ SYSLIB_ROOT = {
                  "iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk",
 }
 BUILD_DIR = tempfile.mkdtemp()
-BINARY = "{build}/Frameworks/{name}.framework/Versions/A/{name}"\
+BINARY = "{build}/Frameworks/{name}.framework/{name}"\
     .format(name=POD_NAME, build=BUILD_DIR)
 LIBTOOL_CMD = ["libtool", "-dynamic", BINARY, "-weak_framework",
                "UIKit", "-weak_framework", "Foundation", "-ObjC",
@@ -116,38 +116,37 @@ def main():
 
     framework = "{build}/Frameworks/{name}.framework".format(name=POD_NAME,
                                                              build=BUILD_DIR)
-    framework_version = "{framework}/Versions/A".format(framework=framework)
-    info_plist_source = "Versions/Current/Info.plist".format(framework_version=framework_version)
-    info_plist_target = "{framework}/Info.plist".format(framework=framework)
-    codesignature_source = "Versions/Current/_CodeSignature".format(framework_version=framework_version)
-    codesignature_target = "{framework}/_CodeSignature".format(framework=framework)
+
+    # flatten the versions - if you don't do this, app store submission fails because
+    # there are "multiple" GoogleMaps executables in the framework
+    shutil.move(framework, "{framework}.old".format(framework=framework))
+    os.mkdir(framework)
+    framework_version = "{framework}.old/Versions/A".format(framework=framework)
+    for file in os.listdir(framework_version):
+      shutil.move("{framework_version}/{file}".format(framework_version=framework_version, file=file), framework)
+    # shutil.removedirs("{framework}.old".format(framework=framework))
+    
 
     print "build dir {build}".format(build=BUILD_DIR)
     print color(u"\U0001f680  Copying Info.plist ...")
-    shutil.copy("{framework_version}/Resources/GoogleMaps.bundle/Info.plist".format(framework_version=framework_version), framework_version)
+    shutil.copy("{framework}/Resources/GoogleMaps.bundle/Info.plist".format(framework=framework), framework)
     print color(u"\U0001f680  Modifying Info.plist ...")
-    subprocess.call(["defaults", "write", "{framework_version}/Info.plist".format(framework_version=framework_version), "CFBundleExecutable", POD_NAME])
-    subprocess.call(["defaults", "write", "{framework_version}/Info.plist".format(framework_version=framework_version), "MinimumOSVersion", "8.0"])
-    print color(u"\U0001f680  Symlinking Info.plist ...")
-    os.symlink(info_plist_source, info_plist_target)
+    subprocess.call(["defaults", "write", "{framework}/Info.plist".format(framework=framework), "CFBundleExecutable", POD_NAME])
+    subprocess.call(["defaults", "write", "{framework}/Info.plist".format(framework=framework), "MinimumOSVersion", "8.0"])
 
-    print color(u"\U0001f680  Symlinking _CodeSignature ...")
-    os.symlink(codesignature_source, codesignature_target)
-
-    resources = "{framework_version}/Resources".format(framework_version=framework_version)
+    resources = "{framework}/Resources".format(framework=framework)
     print color(u"\U0001f680  Moving bundles out of Resources ...")
     for file in os.listdir(resources):
-        shutil.move("{resources}/{file}".format(resources=resources, file=file), framework_version)
-        os.symlink("Versions/Current/{file}".format(file=file), "{framework}/{file}".format(framework=framework, file=file))
+        shutil.move("{resources}/{file}".format(resources=resources, file=file), framework)
 
     print color(u"\u2600\ufe0f Signing bundle...")
-    bundle = "{framework_version}/GoogleMaps.bundle".format(framework_version=framework_version)
+    bundle = "{framework}/GoogleMaps.bundle".format(framework=framework)
     cmd = ["codesign", "-s", "-", bundle]
     execute(cmd)
 
     print color(u"\U0001f680  Removing Resources directory and symlinks ...")
     os.rmdir(resources)
-    os.remove("{framework}/Resources".format(framework=framework))
+    #os.remove("{framework}/Resources".format(framework=framework))
 
     print color(u"\U0001f680  Replacing binary and creating tar.gz ...")
     shutil.move(output, BINARY)
